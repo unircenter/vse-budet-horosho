@@ -55,7 +55,7 @@ async function askAI() {
         // Склеиваем ключ прямо в памяти браузера скрытно от роботов-сканеров
         let fullKey = part1 + part2;
 
-        const response = await fetch('https://proxyapi.ru', {
+        const response = await fetch('https://api.proxyapi.ru/openai/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
