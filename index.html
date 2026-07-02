@@ -150,14 +150,14 @@
         
         <button class="tariff-btn" onclick="startRecharge(5)">Продлить сеанс через СБП (+5 ответов) — 30 руб.</button>
         <button class="tariff-btn" onclick="startRecharge(10)">Глубокий разбор через СБП (+10 ответов) — 50 руб.</button>
-        <button class="tariff-btn" onclick="startRecharge(25)">Безлимит на evening через СБП (+25 ответов) — 99 руб.</button>
+        <button class="tariff-btn" onclick="startRecharge(25)">Безлимит на вечер через СБП (+25 ответов) — 99 руб.</button>
         
         <div id="timer-status">Ожидание оплаты... Откройте приложение банка. Батарейка зарядится через 40 сек.</div>
     </div>
 </div>
 
 <script>
-    let currentLimits = localStorage.getItem('ai_final_limits_v11') !== null ? parseInt(localStorage.getItem('ai_final_limits_v11')) : 5;
+    let currentLimits = localStorage.getItem('ai_final_limits_v12') !== null ? parseInt(localStorage.getItem('ai_final_limits_v12')) : 5;
     
     let chatHistory = [
         {
@@ -222,13 +222,13 @@
             const data = await response.json();
             if (!response.ok || data.error) throw new Error('Ошибка сервера');
 
-            // ТЕПЕРЬ ТУТ СТОПРОЦЕНТНО ИДЕАЛЬНЫЙ ИНДЕКСchoices[0]
+            // ЗДЕСЬ ИСПРАВЛЕНО НА СТОПРОЦЕНТНО ПРАВИЛЬНЫЙ ВАРИАНТ OpenAI С ИНДЕКСОМ [0]
             const aiReply = data.choices[0].message.content;
             chatHistory.push({ role: 'assistant', content: aiReply });
             responseBox.innerText = aiReply;
             
             currentLimits--;
-            localStorage.setItem('ai_final_limits_v11', currentLimits);
+            localStorage.setItem('ai_final_limits_v12', currentLimits);
             updateUI();
             document.getElementById('user-input').value = "";
 
@@ -264,7 +264,7 @@
         document.getElementById('timer-status').style.display = 'block';
         
         setTimeout(function() {
-            localStorage.setItem('ai_final_limits_v11', amount);
+            localStorage.setItem('ai_final_limits_v12', amount);
             currentLimits = amount;
             updateUI();
             
