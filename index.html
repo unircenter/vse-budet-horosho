@@ -270,3 +270,18 @@
             
             document.getElementById('welcome-text').innerText = "Рад, что ты вернулся. Наш сеанс продолжается, я внимательно слушаю...";
             document.getElementById('timer-status').style.display = 'none';
+                    for (let j = 0; j < buttons.length; j++) {
+            buttons[j].style.display = 'block';
+        }
+        
+        chatHistory = [
+            {
+                role: 'system', 
+                content: 'Ты — самый добрый, чуткий и поддерживающий друг и психолог на свете. Ты снова готов слушать.'
+            }
+        ];
+        
+        alert("🔋 Батарейка успешно заряжена на " + amount + " ответов! Наш сеанс продолжается.");
+    }, 40000); 
+}
+
