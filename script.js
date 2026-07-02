@@ -53,7 +53,7 @@ async function askAI() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer sk-MxrX305sh2mHt5FW9TP7khb2Uf5VbpKZ'
+                'Authorization': 'Bearer sk-tpvISlXngz1tWZQN47w2gdRrer7IsWnU'
             },
             body: JSON.stringify({
                 model: 'gpt-4o-mini',
@@ -90,11 +90,11 @@ function startRecharge(amount) {
     
     // ВАШИ НАСТОЯЩИЕ Т-БАНК ССЫЛКИ СБП
     if (amount === 5) {
-        payUrl = "https://tbank.ru"; 
+        payUrl = "https://www.tbank.ru/cf/3sc0phCSkIT"; 
     } else if (amount === 10) {
-        payUrl = "https://tbank.ru"; 
+        payUrl = "https://www.tbank.ru/cf/2jJQ3IVrmsy"; 
     } else if (amount === 25) {
-        payUrl = "https://tbank.ru";
+        payUrl = "https://www.tbank.ru/cf/5ZWRIiZrUq";
     }
 
     window.open(payUrl, '_blank');
