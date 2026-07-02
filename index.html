@@ -157,8 +157,7 @@
 </div>
 
 <script>
-    // Уникальное имя лимита для чистого старта
-    let currentLimits = localStorage.getItem('ai_final_limits') !== null ? parseInt(localStorage.getItem('ai_final_limits')) : 5;
+    let currentLimits = localStorage.getItem('ai_final_limits_v5') !== null ? parseInt(localStorage.getItem('ai_final_limits_v5')) : 5;
     
     let chatHistory = [
         {
@@ -208,7 +207,6 @@
         chatHistory.push({ role: 'user', content: userMessageContent });
 
         try {
-            // Возвращаем вчерашний, 100% рабочий адрес запроса напрямую
             const response = await fetch('https://proxyapi.ru', {
                 method: 'POST',
                 headers: {
@@ -224,12 +222,12 @@
             const data = await response.json();
             if (!response.ok || data.error) throw new Error('Ошибка сервера');
 
-            const aiReply = data.choices.message.content;
+            const aiReply = data.choices[0].message.content;
             chatHistory.push({ role: 'assistant', content: aiReply });
             responseBox.innerText = aiReply;
             
             currentLimits--;
-            localStorage.setItem('ai_final_limits', currentLimits);
+            localStorage.setItem('ai_final_limits_v5', currentLimits);
             updateUI();
             document.getElementById('user-input').value = "";
 
@@ -265,18 +263,11 @@
         document.getElementById('timer-status').style.display = 'block';
         
         setTimeout(function() {
-            localStorage.setItem('ai_final_limits', amount);
+            localStorage.setItem('ai_final_limits_v5', amount);
             currentLimits = amount;
             updateUI();
             
             document.getElementById('welcome-text').innerText = "Рад, что ты вернулся. Наш сеанс продолжается, я внимательно слушаю...";
             document.getElementById('timer-status').style.display = 'none';
-for (let j = 0; j < buttons.length; j++) {buttons[j].style.display = 'block';}
-            chatHistory = [{ role: 'system', content: 'Ты — самый добрый, чуткий и поддерживающий друг и психолог на свете. Ты снова готов слушать.' }];
-alert("🔋 Батарейка успешно заряжена на " + amount + " ответов! Наш сеанс продолжается.");}, 40000);}     
-      }
-</script>
-
-</body>
-</html>
-            
+            for (let j = 0; j < buttons.length; j++) {
+                buttons[j].style.display = 'block';
