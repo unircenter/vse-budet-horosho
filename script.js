@@ -48,7 +48,8 @@ async function askAI() {
     chatHistory.push({ role: 'user', content: userMessageContent });
 
     try {
-        const response = await fetch('https://api.proxyapi.ru/openai/v1/chat/completions', {
+        // ОФИЦИАЛЬНЫЙ СТАБИЛЬНЫЙ АДРЕС PROXYAPI
+        const response = await fetch('https://proxyapi.ru', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -87,6 +88,7 @@ async function askAI() {
 function startRecharge(amount) {
     let payUrl = "";
     
+    // ВАШИ НАСТОЯЩИЕ Т-БАНК ССЫЛКИ СБП
     if (amount === 5) {
         payUrl = "https://tbank.ru"; 
     } else if (amount === 10) {
