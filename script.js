@@ -48,7 +48,7 @@ async function askAI() {
     chatHistory.push({ role: 'user', content: userMessageContent });
 
     try {
-        const response = await fetch('https://proxyapi.ru', {
+        const response = await fetch('https://api.proxyapi.ru/openai/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
