@@ -207,14 +207,14 @@
         chatHistory.push({ role: 'user', content: userMessageContent });
 
         try {
-            const mySecret = "iQWvCGcuJljkH2MJIO2IVFTAxdhFUMm92-ks";
-            const fullKey = mySecret.split("").reverse().join("");
+           const cleanKey = "29mUFhdqxATFVI2OJM2HkjlJuGCpvWQi"; // Ваш ключ без букв sk-
+'Authorization': 'Bearer sk-' + cleanKey
 
             const response = await fetch('https://proxyapi.ru', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + fullKey
+                 
                 },
                 body: JSON.stringify({
                     model: 'gpt-4o-mini',
