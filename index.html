@@ -148,13 +148,18 @@
         }
     ];
 
-    function updateUI() {
+        function updateUI() {
         document.getElementById('limit-count').innerText = currentLimits;
         if (currentLimits <= 0) {
             document.getElementById('user-input').disabled = true;
             document.getElementById('send-btn').disabled = true;
             document.getElementById('pay-zone').style.display = 'block';
-        }
+        } else {
+            // Если лимиты больше нуля — возвращаем сайт в рабочий режим
+            document.getElementById('user-input').disabled = false;
+            document.getElementById('send-btn').disabled = false;
+            document.getElementById('pay-zone').style.display = 'none';
+        }    
     }
     updateUI();
     // Отправка сообщения по нажатию Enter на компьютере
@@ -260,7 +265,7 @@
             payBtn.innerText = "Начать новый сеанс за 30 руб.";
             
             // Очищаем историю чата, чтобы новый сеанс начался с чистого листа
-            chatHistory = [chatHistory[0]]; 
+            chatHistory = [{ role: 'system', content: 'Ты — самый добрый, чуткий и поддерживающий друг и психолог на свете. Ты снова готов слушать.' }]; 
             
             alert("🔋 Батарейка успешно заряжена! Наш сеанс продолжается.");
         }, 40000); // 40 секунд ожидания
