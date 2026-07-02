@@ -132,7 +132,7 @@
 
     <div id="pay-zone" class="pay-box">
         <p style="color: #991b1b; margin: 0; font-size: 14px;">Ваш бесплатный экспресс-сеанс окончен. Батарейка зарядится завтра бесплатно, или вы можете продолжить наш душевный разговор прямо сейчас.</p>
-        <button class="pay-btn" onclick="window.open('https://yoomoney.ru', '_blank')">Начать новый сеанс за 30 руб.</button>
+       <button class="pay-btn" id="pay-button-trigger">Начать новый сеанс за 30 руб.</button>
     </div>
 </div>
 
@@ -232,7 +232,39 @@
                 sendBtn.innerText = "Поделиться";
             }
         }
-    }
+    }    // Логика автоматической зарядки по таймеру
+    document.getElementById('pay-button-trigger').addEventListener('click', function() {
+        // 1. Открываем страницу оплаты ЮMoney в новой вкладке
+        window.open('https://yoomoney.ru', '_blank');
+        
+        // 2. Меняем текст на кнопке, чтобы пользователь понимал, что происходит
+        this.disabled = true;
+        this.innerText = "Ожидание оплаты... (Батарейка зарядится через 40 сек)";
+        
+        // 3. Включаем таймер на 40 секунд (40000 миллисекунд)
+        setTimeout(function() {
+            // Заряжаем батарейку в памяти браузера
+            localStorage.setItem('ai_limits_v3', 5);
+            // Обновляем экран
+            currentLimits = 5;
+            updateUI();
+            
+            // Прячем окно оплаты и возвращаем поле ввода в рабочий режим
+            document.getElementById('pay-zone').style.display = 'none';
+            document.getElementById('user-input').disabled = false;
+            document.getElementById('send-btn').disabled = false;
+            
+            // Возвращаем кнопке исходный вид на будущее
+            const payBtn = document.getElementById('pay-button-trigger');
+            payBtn.disabled = false;
+            payBtn.innerText = "Начать новый сеанс за 30 руб.";
+            
+            // Очищаем историю чата, чтобы новый сеанс начался с чистого листа
+            chatHistory = [chatHistory[0]]; 
+            
+            alert("🔋 Батарейка успешно заряжена! Наш сеанс продолжается.");
+        }, 40000); // 40 секунд ожидания
+    });
 </script>
 
 
