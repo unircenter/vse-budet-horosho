@@ -125,7 +125,7 @@
         <span class="battery-icon">🔋</span> Осталось ответов в сеансе: <span id="limit-count">5</span>/5
     </div>
 
-    <textarea id="user-input" placeholder="Напиши сюда свои мысли или ответь на вопрос ИИ..."></textarea>
+    <textarea id="user-input" placeholder="Поделись тем, что у тебя на душе, или просто ответь мне..."></textarea>
     <button id="send-btn" onclick="askAI()">Поделиться</button>
 
     <div id="response" class="response-box"></div>
@@ -157,6 +157,16 @@
         }
     }
     updateUI();
+    // Отправка сообщения по нажатию Enter на компьютере
+    document.getElementById('user-input').addEventListener('keydown', function(event) {
+        // Проверяем, что нажата клавиша Enter и НЕ зажат Shift (чтобы можно было переносить строки через Shift+Enter)
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault(); // Отменяем обычный перенос строки
+            if (currentLimits > 0) {
+                askAI(); // Запускаем отправку
+            }
+        }
+    });
 
         async function askAI() {
         const text = document.getElementById('user-input').value.trim();
