@@ -248,13 +248,14 @@
     function startRecharge(amount) {
         let payUrl = "";
         
-        if (amount === 5) {
-            payUrl = "https://www.tbank.ru/cf/3sc0phCSkIT"; 
+               if (amount === 5) {
+            payUrl = "https://pay.cloudtips.ru/p/226f7135"; 
         } else if (amount === 10) {
-            payUrl = "https://www.tbank.ru/cf/2jJQ3IVrmsy"; 
+            payUrl = "https://pay.cloudtips.ru/p/214a0558"; 
         } else if (amount === 25) {
-            payUrl = "https://www.tbank.ru/cf/5ZWRIiZrUq";
+            payUrl = "https://pay.cloudtips.ru/p/487e2380";
         }
+
 
         window.open(payUrl, '_blank');
         
