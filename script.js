@@ -23,7 +23,7 @@ function updateUI() {
 
 // Запускаем проверку интерфейса сразу при старте страницы
 setTimeout(updateUI, 100);
-
+let currentAudio = null; // Поднимаем переменную наверх, чтобы askAI её видела
 async function askAI() {
     const text = document.getElementById('user-input').value.trim();
     if (!text) return alert("Пожалуйста, напиши что-нибудь.");
@@ -90,8 +90,6 @@ async function askAI() {
         }
     }
 }
-
-let currentAudio = null;
 async function speakText() {
     const text = document.getElementById('response').innerText;
     if (!text || text.startsWith("Внимательно") || text.startsWith("Обдумываю")) return;
