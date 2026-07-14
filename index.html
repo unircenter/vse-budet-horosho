@@ -4,8 +4,131 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Все будет хорошо — Твой карманный друг</title>
-    <!-- Подключаем внешние стили CSS -->
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0fdf4 100%);
+            color: #334155;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            color: #0c4a6e;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        p.subtitle {
+            color: #64748b;
+            font-size: 15px;
+            margin-bottom: 25px;
+        }
+        .battery-box {
+            display: inline-flex;
+            align-items: center;
+            background-color: #f1f5f9;
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #0f766e;
+            margin-bottom: 20px;
+        }
+        .battery-icon {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 16px;
+            resize: none;
+            box-sizing: border-box;
+            outline: none;
+            transition: border 0.3s;
+        }
+        textarea:focus {
+            border-color: #38bdf8;
+        }
+        button {
+            background-color: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #0284c7;
+        }
+        button:disabled {
+            background-color: #cbd5e1;
+            cursor: not-allowed;
+        }
+        .response-box {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #f8fafc;
+            border-left: 4px solid #38bdf8;
+            border-radius: 4px 12px 12px 4px;
+            text-align: left;
+            min-height: 50px;
+            display: none;
+            line-height: 1.5;
+        }
+        .pay-box {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fef2f2;
+            border: 1px solid #fee2e2;
+            border-radius: 12px;
+        }
+        .pay-title {
+            color: #991b1b;
+            margin: 0 0 15px 0;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .tariff-btn {
+            background-color: #10b981;
+            margin-top: 8px;
+            font-size: 14px;
+            padding: 10px 15px;
+        }
+        .tariff-btn:hover {
+            background-color: #059669;
+        }
+        #timer-status {
+            display: none;
+            color: #b91c1c;
+            font-weight: bold;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
 
@@ -17,25 +140,150 @@
         <span class="battery-icon">🔋</span> Осталось ответов в сеансе: <span id="limit-count">5</span>
     </div>
 
-    <textarea id="user-input" placeholder="Поделись тем, что у тебя на душе, или просто ответь мне..."></textarea>
+    <textarea id="user-input" placeholder="Поделись тем, что у тебя на душе..."></textarea>
     <button id="send-btn" onclick="askAI()">Поделиться</button>
 
     <div id="response" class="response-box"></div>
-    <button id="voice-btn" onclick="speakText()">🔊 Включить живой голос</button>
 
     <div id="pay-zone" class="pay-box">
         <p class="pay-title">Бесплатный сеанс окончен. Выберите пакет и оплатите в 1 клик:</p>
         
         <button class="tariff-btn" onclick="startRecharge(5)">Продлить сеанс (+5 ответов) — 50 руб.</button>
         <button class="tariff-btn" onclick="startRecharge(10)">Глубокий разбор (+10 ответов) — 75 руб.</button>
-        <button class="tariff-btn" onclick="startRecharge(25)">Безлимит на evening (+25 ответов) — 99 руб.</button>
+        <button class="tariff-btn" onclick="startRecharge(25)">Безлимит на вечер (+25 ответов) — 99 руб.</button>
         
         <div id="timer-status">Ожидание оплаты... Откройте приложение банка. Батарейка зарядится через 40 сек.</div>
     </div>
 </div>
 
-<!-- Подключаем внешнюю логику JavaScript -->
-<script src="script.js"></script>
+<script>
+    let currentLimits = localStorage.getItem('ai_rollback_limits_v1') !== null ? parseInt(localStorage.getItem('ai_rollback_limits_v1')) : 5;
+    
+    let chatHistory = [
+        {
+            role: 'system', 
+            content: 'Ты — самый добрый, чуткий и поддерживающий друг и психолог на свете. Твоя цель — вести последовательный, логичный и глубокий диалог с пользователем. Задавай наводящие мягкие вопросы, внимательно цепляйся за детали из прошлых ответов. Используй короткие, понятные предложения. Показывай, что ты помнишь всё, что он сказал ранее.'
+        }
+    ];
+
+    function updateUI() {
+        document.getElementById('limit-count').innerText = currentLimits;
+        if (currentLimits <= 0) {
+            document.getElementById('user-input').disabled = true;
+            document.getElementById('send-btn').disabled = true;
+            document.getElementById('pay-zone').style.display = 'block';
+        } else {
+            document.getElementById('user-input').disabled = false;
+            document.getElementById('send-btn').disabled = false;
+            document.getElementById('pay-zone').style.display = 'none';
+        }
+    }
+    updateUI();
+
+    document.getElementById('user-input').addEventListener('keydown', function(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            if (currentLimits > 0) askAI();
+        }
+    });
+
+    async function askAI() {
+        const text = document.getElementById('user-input').value.trim();
+        if (!text) return alert("Пожалуйста, напиши что-нибудь.");
+        
+        const responseBox = document.getElementById('response');
+        const sendBtn = document.getElementById('send-btn');
+        
+        sendBtn.disabled = true;
+        sendBtn.innerText = "Обдумываю твои слова...";
+        responseBox.style.display = "block";
+        responseBox.innerText = "Внимательно читаю...";
+
+        let userMessageContent = text;
+        if (currentLimits === 1) {
+            userMessageContent += "\n\n(ИНСТРУКЦИЯ ДЛЯ ИИ: Это твой последний ответ в текущем сеансе. Сеанс завершен. Тебе нужно очень мягко подвести итог беседы, подбодрить меня, сказать, что всё обязательно будет хорошо, и в самом конце ответа строго добавить фразу: 'Наш сегодняшний бесплатный экспресс-сеанс подошел к концу. Чтобы продолжить наш разговор без ограничений, пожалуйста, выбери пакет дозарядки батарейки ниже. Я буду очень ждать тебя!').";
+        }
+
+        chatHistory.push({ role: 'user', content: userMessageContent });
+
+        try {
+            const cleanKey = "29mUFhdqxATFVI2OJM2HkjlJuGCpvWQi"; 
+
+            const response = await fetch('https://api.proxyapi.ru/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer sk-' + cleanKey
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o-mini',
+                    messages: chatHistory
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok || data.error) throw new Error('Ошибка сервера');
+
+            const aiReply = data.choices.message.content;
+            chatHistory.push({ role: 'assistant', content: aiReply });
+            responseBox.innerText = aiReply;
+            
+            currentLimits--;
+            localStorage.setItem('ai_rollback_limits_v1', currentLimits);
+            updateUI();
+            document.getElementById('user-input').value = "";
+
+        } catch (error) {
+            chatHistory.pop();
+            responseBox.innerText = "Ой, я немного отвлекся. Повтори, пожалуйста, я очень хочу тебя выслушать.";
+            console.error(error);
+        } finally {
+            if (currentLimits > 0) {
+                sendBtn.disabled = false;
+                sendBtn.innerText = "Поделиться";
+            }
+        }
+    }
+
+    function startRecharge(amount) {
+        let payUrl = "";
+        
+        if (amount === 5) {
+            payUrl = "https://pay.cloudtips.ru/p/226f7135"; 
+        } else if (amount === 10) {
+            payUrl = "https://pay.cloudtips.ru/p/214a0558"; 
+        } else if (amount === 25) {
+            payUrl = "https://pay.cloudtips.ru/p/487e2380";
+        }
+
+        window.open(payUrl, '_blank');
+        
+        const buttons = document.querySelectorAll('.tariff-btn');
+        for (let i = 0; i < buttons.length; i++) {
+            buttons[i].style.display = 'none';
+        }
+        document.getElementById('timer-status').style.display = 'block';
+        
+        setTimeout(function() {
+            localStorage.setItem('ai_rollback_limits_v1', amount);
+            currentLimits = amount;
+            updateUI();
+            
+            document.getElementById('welcome-text').innerText = "Рад, что ты вернулся. Наш сеанс продолжается, я внимательно слушаю...";
+            document.getElementById('timer-status').style.display = 'none';
+            for (let j = 0; j < buttons.length; j++) {
+                buttons[j].style.display = 'block';
+}
+chatHistory = [
+    {
+        role: 'system', 
+        content: 'Ты — самый добрый, чуткий и поддерживающий друг и психолог на свете. Ты снова готов слушать.'
+    }
+];
+alert("🔋 Батарейка успешно заряжена на " + amount + " ответов! Наш сеанс продолжается.");
+}, 40000); 
+}
+</script>
 
 </body>
 </html>
