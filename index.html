@@ -315,7 +315,7 @@ document.getElementById('voice-btn').style.display = "block";
             // Берем тот же замаскированный ключ, что и для чата
             const cleanKey = "29mUFhdqxATFVI2OJM2HkjlJuGCpvWQi"; 
 
-            const response = await fetch('https://proxyapi.ru', {
+            const response = await fetch('https://api.proxyapi.ru/openai/v1/audio/speech', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
