@@ -145,9 +145,7 @@
 
     <div id="response" class="response-box"></div>
     <!-- Новая кнопка для включения голоса -->
-<button id="voice-btn" onclick="speakText()" style="background-color: #6366f1; display: none; margin-top: 12px; font-weight: bold;">🔊 Слушать ответ</button>
-
-
+<button id="voice-btn" onclick="speakText()" style="background-color: #6366f1; display: none; margin-top: 12px; font-weight: bold;">🔊 Включить живой голос</button>
     <div id="pay-zone" class="pay-box">
         <p class="pay-title">Бесплатный сеанс окончен. Выберите пакет и оплатите в 1 клик через СБП:</p>
         
@@ -293,30 +291,72 @@ document.getElementById('voice-btn').style.display = "block";
         alert("🔋 Батарейка успешно заряжена на " + amount + " ответов! Наш сеанс продолжается.");
     }, 40000); 
 }
-    // Встроенная функция озвучки текста
-    let currentSpeech = null;
-    function speakText() {
+        // Профессиональная нейросетевая озвучка через ProxyAPI
+    let currentAudio = null;
+
+    async function speakText() {
         const text = document.getElementById('response').innerText;
         if (!text || text.startsWith("Внимательно") || text.startsWith("Обдумываю")) return;
 
-        // Если голос уже звучит — выключаем его по кнопке "Остановить"
-        if (window.speechSynthesis.speaking) {
-            window.speechSynthesis.cancel();
-            document.getElementById('voice-btn').innerText = "🔊 Слушать ответ";
+        const voiceBtn = document.getElementById('voice-btn');
+
+        // Если аудио уже играет — кнопка работает как "Стоп"
+        if (currentAudio && !currentAudio.paused) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+            voiceBtn.innerText = "🔊 Включить живой голос";
             return;
         }
 
-        currentSpeech = new SpeechSynthesisUtterance(text);
-        currentSpeech.lang = 'ru-RU'; // Русский язык
-        currentSpeech.rate = 0.9;     // Темп речи: чуть медленнее и спокойнее обычного
+        voiceBtn.disabled = true;
+        voiceBtn.innerText = "⏳ Записываю голос...";
 
-        currentSpeech.onend = function() {
-            document.getElementById('voice-btn').innerText = "🔊 Слушать ответ";
-        };
+        try {
+            // Берем тот же замаскированный ключ, что и для чата
+            const cleanKey = "29mUFhdqxATFVI2OJM2HkjlJuGCpvWQi"; 
 
-        window.speechSynthesis.speak(currentSpeech);
-        document.getElementById('voice-btn').innerText = "🛑 Остановить голос";
+            const response = await fetch('https://proxyapi.ru', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer sk-' + cleanKey
+                },
+                body: JSON.stringify({
+                    model: 'tts-1',        // Нейросетевая модель озвучки
+                    input: text,           // Текст, который нужно наговорить
+                    voice: 'shimmer',       // Нежный, эмпатичный женский голос (для мужчины можно сменить на 'onyx')
+                    response_format: 'mp3' // Формат аудиофайла
+                })
+            });
+
+            if (!response.ok) throw new Error('Ошибка синтеза голоса');
+
+            // Получаем готовый аудио-поток от сервера
+            const blob = await response.blob();
+            const audioUrl = URL.createObjectURL(blob);
+
+            // Создаем плеер и запускаем живую речь
+            currentAudio = new Audio(audioUrl);
+            
+            currentAudio.onplay = function() {
+                voiceBtn.disabled = false;
+                voiceBtn.innerText = "🛑 Остановить голос";
+            };
+
+            currentAudio.onended = function() {
+                voiceBtn.innerText = "🔊 Включить живой голос";
+            };
+
+            currentAudio.play();
+
+        } catch (error) {
+            console.error(error);
+            alert("Не удалось загрузить живой голос. Попробуйте еще раз.");
+            voiceBtn.disabled = false;
+            voiceBtn.innerText = "🔊 Включить живой голос";
+        }
     }
+
 
 </script>
 </body>
