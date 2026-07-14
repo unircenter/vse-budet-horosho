@@ -270,7 +270,10 @@ const aiReply = data.choices[0].message.content;
         try {
             const cleanKey = "29mUFhdqxATFVI2OJM2HkjlJuGCpvWQi"; 
 
-            const response = await fetch('https://proxyapi.ru', {
+                    const baseApiUrl = 'https://proxyapi.ru';
+        const audioEndpoint = '/openai/v1/audio/speech';
+        const response = await fetch(baseApiUrl + audioEndpoint, {
+
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
