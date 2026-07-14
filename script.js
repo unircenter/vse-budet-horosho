@@ -1,4 +1,5 @@
-let currentLimits = localStorage.getItem('ai_split_limits_v2') !== null ? parseInt(localStorage.getItem('ai_split_limits_v2')) : 5;
+let currentLimits = localStorage.getItem('ai_split_limits_v3') !== null ? parseInt(localStorage.getItem('ai_split_limits_v3')) : 5;
+let currentAudio = null;
 
 let chatHistory = [
     {
@@ -8,22 +9,42 @@ let chatHistory = [
 ];
 
 function updateUI() {
-    document.getElementById('limit-count').innerText = currentLimits;
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+    const payZone = document.getElementById('pay-zone');
+    const voiceBtn = document.getElementById('voice-btn');
+    const limitCount = document.getElementById('limit-count');
+
+    if (!userInput || !sendBtn || !payZone || !voiceBtn || !limitCount) return;
+
+    limitCount.innerText = currentLimits;
     if (currentLimits <= 0) {
-        document.getElementById('user-input').disabled = true;
-        document.getElementById('send-btn').disabled = true;
-        document.getElementById('pay-zone').style.display = 'block';
-        document.getElementById('voice-btn').style.display = 'none';
+        userInput.disabled = true;
+        sendBtn.disabled = true;
+        payZone.style.display = 'block';
+        voiceBtn.style.display = 'none';
     } else {
-        document.getElementById('user-input').disabled = false;
-        document.getElementById('send-btn').disabled = false;
-        document.getElementById('pay-zone').style.display = 'none';
+        userInput.disabled = false;
+        sendBtn.disabled = false;
+        payZone.style.display = 'none';
     }
 }
 
-// Запускаем проверку интерфейса сразу при старте страницы
-setTimeout(updateUI, 100);
-let currentAudio = null; // Поднимаем переменную наверх, чтобы askAI её видела
+// Запускаем инициализацию строго ПОСЛЕ полной загрузки HTML-страницы
+window.addEventListener('DOMContentLoaded', () => {
+    updateUI();
+
+    const userInput = document.getElementById('user-input');
+    if (userInput) {
+        userInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                if (currentLimits > 0) askAI();
+            }
+        });
+    }
+});
+
 async function askAI() {
     const text = document.getElementById('user-input').value.trim();
     if (!text) return alert("Пожалуйста, напиши что-нибудь.");
@@ -53,6 +74,7 @@ async function askAI() {
     try {
         const cleanKey = "29mUFhdqxATFVI2OJM2HkjlJuGCpvWQi"; 
 
+        // 1. АДРЕС ДЛЯ ГЕНЕРАЦИИ ТЕКСТА ЧАТА (ЧАТ-КОМПЛИТШИНС)
         const response = await fetch('https://api.proxyapi.ru/openai/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -75,7 +97,7 @@ async function askAI() {
         document.getElementById('voice-btn').style.display = "block";
         
         currentLimits--;
-        localStorage.setItem('ai_split_limits_v2', currentLimits);
+        localStorage.setItem('ai_split_limits_v3', currentLimits);
         updateUI();
         document.getElementById('user-input').value = "";
 
@@ -90,6 +112,7 @@ async function askAI() {
         }
     }
 }
+
 async function speakText() {
     const text = document.getElementById('response').innerText;
     if (!text || text.startsWith("Внимательно") || text.startsWith("Обдумываю")) return;
@@ -109,7 +132,8 @@ async function speakText() {
     try {
         const cleanKey = "29mUFhdqxATFVI2OJM2HkjlJuGCpvWQi"; 
 
-        const response = await fetch('https://api.proxyapi.ru/openai/v1/chat/completions', {
+        // 2. АДРЕС ДЛЯ СИНТЕЗА РЕЧИ (АУДИО-СПИЧ)
+        const response = await fetch('https://proxyapi.ru', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -172,7 +196,7 @@ function startRecharge(amount) {
     document.getElementById('timer-status').style.display = 'block';
     
     setTimeout(function() {
-        localStorage.setItem('ai_split_limits_v2', amount);
+        localStorage.setItem('ai_split_limits_v3', amount);
         currentLimits = amount;
         updateUI();
         
