@@ -322,10 +322,12 @@ document.getElementById('voice-btn').style.display = "block";
                     'Authorization': 'Bearer sk-' + cleanKey
                 },
                 body: JSON.stringify({
-                    model: 'tts-1',        // Нейросетевая модель озвучки
-                    input: text,           // Текст, который нужно наговорить
-                    voice: 'shimmer',       // Нежный, эмпатичный женский голос (для мужчины можно сменить на 'onyx')
-                    response_format: 'mp3' // Формат аудиофайла
+    model: 'gpt-4o-mini-tts', // Обновленная быстрая модель
+    input: text,           
+    voice: 'coral',           // Новый нежный женский голос
+    response_format: 'mp3' 
+})
+
                 })
             });
 
