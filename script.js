@@ -59,7 +59,7 @@ async function askAI() {
     try {
         const cleanKey = "29mUFhdqxATFVI2OJM2HkjlJuGCpvWQi"; 
 
-        const response = await fetch('https://proxyapi.ru', {
+        const response = await fetch('https://api.proxyapi.ru/openai/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -117,7 +117,7 @@ async function speakText() {
     try {
         const cleanKey = "29mUFhdqxATFVI2OJM2HkjlJuGCpvWQi"; 
 
-        const response = await fetch('https://proxyapi.ru', {
+        const response = await fetch('https://api.proxyapi.ru/openai/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
