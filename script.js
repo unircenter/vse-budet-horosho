@@ -1,4 +1,4 @@
-let currentLimits = localStorage.getItem('ai_split_limits_v1') !== null ? parseInt(localStorage.getItem('ai_split_limits_v1')) : 5;
+let currentLimits = localStorage.getItem('ai_split_limits_v2') !== null ? parseInt(localStorage.getItem('ai_split_limits_v2')) : 5;
 
 let chatHistory = [
     {
@@ -20,20 +20,14 @@ function updateUI() {
         document.getElementById('pay-zone').style.display = 'none';
     }
 }
-updateUI();
 
-document.getElementById('user-input').addEventListener('keydown', function(event) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault();
-        if (currentLimits > 0) askAI();
-    }
-});
+// Запускаем проверку интерфейса сразу при старте страницы
+setTimeout(updateUI, 100);
 
 async function askAI() {
     const text = document.getElementById('user-input').value.trim();
     if (!text) return alert("Пожалуйста, напиши что-нибудь.");
     
-    if (window.speechSynthesis) window.speechSynthesis.cancel();
     if (currentAudio && !currentAudio.paused) {
         currentAudio.pause();
         currentAudio.currentTime = 0;
@@ -81,7 +75,7 @@ async function askAI() {
         document.getElementById('voice-btn').style.display = "block";
         
         currentLimits--;
-        localStorage.setItem('ai_split_limits_v1', currentLimits);
+        localStorage.setItem('ai_split_limits_v2', currentLimits);
         updateUI();
         document.getElementById('user-input').value = "";
 
@@ -180,7 +174,7 @@ function startRecharge(amount) {
     document.getElementById('timer-status').style.display = 'block';
     
     setTimeout(function() {
-        localStorage.setItem('ai_split_limits_v1', amount);
+        localStorage.setItem('ai_split_limits_v2', amount);
         currentLimits = amount;
         updateUI();
         
@@ -200,4 +194,3 @@ function startRecharge(amount) {
         alert("🔋 Батарейка успешно заряжена на " + amount + " ответов! Наш сеанс продолжается.");
     }, 40000); 
 }
-
