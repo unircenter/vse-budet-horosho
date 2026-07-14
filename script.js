@@ -164,11 +164,11 @@ function startRecharge(amount) {
     let payUrl = "";
     
     if (amount === 5) {
-        payUrl = "ВСТАВЬТЕ_СЮДА_ССЫЛКУ_НА_50_РУБЛЕЙ"; 
+        payUrl = "https://pay.cloudtips.ru/p/226f7135"; 
     } else if (amount === 10) {
-        payUrl = "ВСТАВЬТЕ_СЮДА_ССЫЛКУ_НА_75_РУБЛЕЙ"; 
+        payUrl = "https://pay.cloudtips.ru/p/214a0558"; 
     } else if (amount === 25) {
-        payUrl = "ВСТАВЬТЕ_СЮДА_ССЫЛКУ_НА_99_РУБЛЕЙ";
+        payUrl = "https://pay.cloudtips.ru/p/487e2380";
     }
 
     window.open(payUrl, '_blank');
