@@ -200,54 +200,35 @@
 
         const voiceBtn = document.getElementById('voice-btn');
 
-        if (currentAudio && !currentAudio.paused) {
-            currentAudio.pause();
-            currentAudio.currentTime = 0;
+        // Если голос уже звучит — выключаем его по кнопке "Стоп"
+        if (window.speechSynthesis && window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel();
             voiceBtn.innerText = "🔊 Включить живой голос";
             return;
         }
 
-        voiceBtn.disabled = true;
-        voiceBtn.innerText = "⏳ Записываю голос...";
+        // Создаем системный речевой запрос
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ru-RU'; // Русский язык
+        utterance.rate = 0.85;    // Делаем темп речи чуть медленнее, мягче и спокойнее
+        utterance.pitch = 1.0;    // Естественный тон голоса
 
-                try {
-            const cleanKey = "29mUFhdqxATFVI2OJM2HkjlJuGCpvWQi"; 
+        utterance.onstart = function() {
+            voiceBtn.innerText = "🛑 Остановить голос";
+        };
 
-            // Склеиваем правильный технический адрес
-            const baseApiUrl = 'https://proxyapi.ru';
-            const audioEndpoint = '/openai/v1/audio/speech';
+        utterance.onend = function() {
+            voiceBtn.innerText = "🔊 Включить живой голос";
+        };
 
-            const response = await fetch(baseApiUrl + audioEndpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer sk-' + cleanKey
-                },
-body: JSON.stringify({
-model: 'gpt-4o-mini-tts',
-input: text,
-voice: 'coral',
-response_format: 'mp3'
-})
-});
-if (!response.ok) throw new Error('Ошибка синтеза голоса');
-const blob = await response.blob();
-const audioUrl = URL.createObjectURL(blob);
-currentAudio = new Audio(audioUrl);
-currentAudio.onplay = function() {
-voiceBtn.disabled = false;
-voiceBtn.innerText = "🛑 Остановить голос";
-};
-currentAudio.onended = function() {
-voiceBtn.innerText = "🔊 Включить живой голос";
-};
-currentAudio.play();
-} catch (error) {
-console.error(error);
-alert("Не удалось загрузить живой голос. Попробуйте еще раз.");
-voiceBtn.disabled = false;
-voiceBtn.innerText = "🔊 Включить живой голос";
-}
+        utterance.onerror = function() {
+            voiceBtn.innerText = "🔊 Включить живой голос";
+        };
+
+        // Запускаем озвучку прямо на устройстве пользователя
+        window.speechSynthesis.speak(utterance);
+    }
+
 }
 function startRecharge(amount) {
 if (currentAudio && !currentAudio.paused) currentAudio.pause();
