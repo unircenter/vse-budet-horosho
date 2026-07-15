@@ -144,7 +144,6 @@
     <button id="send-btn" onclick="askAI()">Поделиться</button>
 
     <div id="response" class="response-box"></div>
-    <button id="voice-btn" onclick="speakText()" style="background-color: #6366f1; display: none; margin-top: 12px; font-weight: bold;">🔊 Включить живой голос</button>
 
     <div id="pay-zone" class="pay-box">
         <p class="pay-title">Бесплатный сеанс окончен. Выберите пакет и оплатите в 1 клик:</p>
@@ -158,11 +157,9 @@
 </div>
 
 <script>
-    let currentLimits = localStorage.getItem('ai_perfect_limits_v1') !== null ? parseInt(localStorage.getItem('ai_perfect_limits_v1')) : 5;
-    let currentAudio = null; // ВОТ СЮДА ЕЁ НУЖНО ПЕРЕНЕСТИ!
-
+    let currentLimits = localStorage.getItem('ai_rollback_limits_v1') !== null ? parseInt(localStorage.getItem('ai_rollback_limits_v1')) : 5;
+    
     let chatHistory = [
-
         {
             role: 'system', 
             content: 'Ты — самый добрый, чуткий и поддерживающий друг и психолог на свете. Твоя цель — вести последовательный, логичный и глубокий диалог с пользователем. Задавай наводящие мягкие вопросы, внимательно цепляйся за детали из прошлых ответов. Используй короткие, понятные предложения. Показывай, что ты помнишь всё, что он сказал ранее.'
@@ -193,10 +190,7 @@
     async function askAI() {
         const text = document.getElementById('user-input').value.trim();
         if (!text) return alert("Пожалуйста, напиши что-нибудь.");
-        if (currentAudio && !currentAudio.paused) { currentAudio.pause(); currentAudio.currentTime = 0; }
-document.getElementById('voice-btn').innerText = "🔊 Включить живой голос";
-document.getElementById('voice-btn').style.display = "none";
-
+        
         const responseBox = document.getElementById('response');
         const sendBtn = document.getElementById('send-btn');
         
@@ -234,7 +228,6 @@ const aiReply = data.choices[0].message.content;
 
             chatHistory.push({ role: 'assistant', content: aiReply });
             responseBox.innerText = aiReply;
-            document.getElementById('voice-btn').style.display = "block";
             
             currentLimits--;
             localStorage.setItem('ai_rollback_limits_v1', currentLimits);
@@ -252,68 +245,6 @@ const aiReply = data.choices[0].message.content;
             }
         }
     }
-      
-    async function speakText() {
-        const text = document.getElementById('response').innerText;
-        if (!text || text.startsWith("Внимательно") || text.startsWith("Обдумываю")) return;
-
-        const voiceBtn = document.getElementById('voice-btn');
-
-        if (currentAudio && !currentAudio.paused) {
-            currentAudio.pause();
-            currentAudio.currentTime = 0;
-            voiceBtn.innerText = "🔊 Включить живой голос";
-            return;
-        }
-
-        voiceBtn.disabled = true;
-        voiceBtn.innerText = "⏳ Записываю голос...";
-
-        try {
-            const cleanKey = "29mUFhdqxATFVI2OJM2HkjlJuGCpvWQi"; 
-
-            // Разделяем адрес без опечаток
-            const baseApiUrl = 'https://api.proxyapi.ru';
-            const audioEndpoint = '/openai/v1/audio/speech';
-
-            const response = await fetch(baseApiUrl + audioEndpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer sk-' + cleanKey
-                },
-                body: JSON.stringify({
-                    model: 'gpt-4o-mini-tts', // Официальная TTS модель
-                    input: text,              // Текст для озвучки
-                    voice: 'coral',           // Живой нежный голос
-                    response_format: 'mp3'
-                })
-            });
-
-            if (!response.ok) throw new Error('Ошибка синтеза голоса');
-
-            const blob = await response.blob();
-            const audioUrl = URL.createObjectURL(blob);
-
-            currentAudio = new Audio(audioUrl);
-            
-            currentAudio.onplay = function() {
-                voiceBtn.disabled = false;
-                voiceBtn.innerText = "🛑 Остановить голос";
-            };
-
-            currentAudio.onended = function() {
-                voiceBtn.innerText = "🔊 Включить живой голос";
-            };
-
-            currentAudio.play();
-
-        } catch (error) {
-            console.error(error);
-            alert("Не удалось загрузить живой голос. Попробуйте еще раз.");
-            voiceBtn.disabled = false;
-            voiceBtn.innerText = "🔊 Включить живой голос";
-        }
 
     function startRecharge(amount) {
         let payUrl = "";
