@@ -194,16 +194,17 @@
         }
     }
 
-            function speakText() {
-        const text = document.getElementById('response').innerText;
+              async function speakText() {
+        const rawText = document.getElementById('response').innerText;
+        // Очищаем текст от переносов строк и лишних пробелов, чтобы запрос не ломался
+        const text = rawText.replace(/\s+/g, ' ').trim();
         if (!text || text.startsWith("Внимательно") || text.startsWith("Обдумываю")) return;
 
         const voiceBtn = document.getElementById('voice-btn');
 
-        // Если старый плеер уже был создан — удаляем его перед новой озвучкой
-        const oldFrame = document.getElementById('yandex-voice-frame');
-        if (oldFrame) {
-            oldFrame.remove();
+        if (currentAudio && !currentAudio.paused) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
             voiceBtn.innerText = "🔊 Включить живой голос";
             return;
         }
@@ -212,31 +213,53 @@
         voiceBtn.innerText = "⏳ Записываю голос...";
 
         try {
-            // Создаем невидимый изолированный контейнер-фрейм, который браузер не сможет заблокировать
-            const frame = document.createElement('iframe');
-            frame.id = 'yandex-voice-frame';
-            frame.style.display = 'none';
+            // Используем чистый ключ авторизации ProxyAPI
+            const cleanKey = "29mUFhdqxATFVI2OJM2HkjlJuGCpvWQi"; 
+
+            const response = await fetch('https://proxyapi.ru', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer sk-' + cleanKey
+                },
+                body: JSON.stringify({
+                    model: 'tts-1',        // Официальная базовая модель озвучки
+                    input: text,           // Очищенный текст ответа
+                    voice: 'coral',         // Живой нежный человеческий голос
+                    response_format: 'mp3' 
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.text();
+                console.error("Детали ошибки от сервера:", errorData);
+                throw new Error('Ошибка синтеза');
+            }
+
+            const blob = await response.blob();
+            const audioUrl = URL.createObjectURL(blob);
+
+            currentAudio = new Audio(audioUrl);
             
-            // Загружаем мягкий, живой человеческий голос Оксаны
-            frame.src = "https://yandex.net" 
-                + encodeURIComponent(text) 
-                + "&format=mp3&lang=ru-RU&speaker=oksana&emotion=good&speed=0.9";
-
-            // Встраиваем фрейм на страницу — звук пойдет автоматически
-            document.body.appendChild(frame);
-
-            // Кнопка переключается в режим "Стоп"
-            setTimeout(() => {
+            currentAudio.onplay = function() {
                 voiceBtn.disabled = false;
                 voiceBtn.innerText = "🛑 Остановить голос";
-            }, 1000);
+            };
+
+            currentAudio.onended = function() {
+                voiceBtn.innerText = "🔊 Включить живой голос";
+            };
+
+            currentAudio.play();
 
         } catch (error) {
             console.error(error);
+            alert("Не удалось загрузить живой голос. Попробуйте еще раз.");
             voiceBtn.disabled = false;
             voiceBtn.innerText = "🔊 Включить живой голос";
         }
     }
+
 
 function startRecharge(amount) {
 if (currentAudio && !currentAudio.paused) currentAudio.pause();
