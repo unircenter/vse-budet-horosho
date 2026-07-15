@@ -93,8 +93,9 @@
 </div>
 
 <script>
-    let currentLimits = localStorage.getItem('ai_clean_limits_v1') !== null ? parseInt(localStorage.getItem('ai_clean_limits_v1')) : 5;
-    let currentAudio = null; // Изолированная аудио-переменная
+        let currentLimits = localStorage.getItem('ai_perfect_limits_v100') !== null ? parseInt(localStorage.getItem('ai_perfect_limits_v100')) : 5;
+    let currentAudio = null;
+    let isAutoplayEnabled = false; // По умолчанию автоозвучка выключена
     
     let chatHistory = [
         {
@@ -176,6 +177,10 @@
             
             // Показываем кнопку озвучки строго после вывода ответа
             document.getElementById('voice-btn').style.display = "block";
+            // Если пользователь ранее включил автоозвучку — запускаем её сами
+if (isAutoplayEnabled) {
+    speakText();
+}
             
             currentLimits--;
             localStorage.setItem('ai_clean_limits_v1', currentLimits);
@@ -193,18 +198,26 @@
             }
         }
     }
-        async function speakText() {
+           async function speakText(isAutomaticTrigger = false) {
         const rawText = document.getElementById('response').innerText;
         const text = rawText.replace(/\s+/g, ' ').trim();
         if (!text || text.startsWith("Внимательно") || text.startsWith("Обдумываю")) return;
 
         const voiceBtn = document.getElementById('voice-btn');
 
-        if (currentAudio && !currentAudio.paused) {
-            currentAudio.pause();
-            currentAudio.currentTime = 0;
-            voiceBtn.innerText = "🔊 Включить живой голос";
-            return;
+        // Логика нажатия на кнопку пользователем ВРУЧНУЮ
+        if (!isAutomaticTrigger) {
+            // Если аудио уже поёт — кнопка работает как "Стоп и Выключение авторежима"
+            if (currentAudio && !currentAudio.paused) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                isAutoVoice = false; // Отключаем автоматический режим
+                voiceBtn.style.backgroundColor = "#6366f1"; // Возвращаем фиолетовый цвет
+                voiceBtn.innerText = "🔊 Включить автоозвучку";
+                return;
+            }
+            // Если звук не играл и пользователь нажал кнопку — включаем авторежим постоянной озвучки
+            isAutoVoice = true;
         }
 
         voiceBtn.disabled = true;
@@ -212,19 +225,18 @@
 
         try {
             const cleanKey = "29mUFhdqxATFVI2OJM2HkjlJuGCpvWQi"; 
-
-            const response = await fetch('https://api.proxyapi.ru/openai/v1/audio/speech', {
+ const response = await fetch('https://api.proxyapi.ru/openai/v1/audio/speech', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': 'Bearer sk-' + cleanKey
                 },
                 body: JSON.stringify({
-                    model: 'gpt-4o-mini-tts', // Модель из вашей документации
-                    input: text,
-                    voice: 'coral',           // Мягкий женский голос из списка
+                    model: 'gpt-4o-mini-tts', 
+                    input: text,           
+                    voice: 'coral',           
                     response_format: 'mp3',
-                    instructions: 'Говори размеренно, слегка занижая тон голоса, мягко и очень спокойно.' // Обязательный параметр управления речью
+                    instructions: 'Говори размеренно, слегка занижая тон голоса, мягко и очень спокойно.' // Ваша настройка
                 })
             });
 
@@ -237,11 +249,19 @@
             
             currentAudio.onplay = function() {
                 voiceBtn.disabled = false;
-                voiceBtn.innerText = "🛑 Остановить голос";
+                voiceBtn.style.backgroundColor = "#ef4444"; // Красный цвет во время говорения
+                voiceBtn.innerText = "🛑 Остановить голос (Выключить автоозвучку)";
             };
 
             currentAudio.onended = function() {
-                voiceBtn.innerText = "🔊 Включить живой голос";
+                // Когда чтение завершено, если авторежим активен — красим кнопку в зелёный и ждём следующий ответ
+                if (isAutoVoice) {
+                    voiceBtn.style.backgroundColor = "#10b981"; // Зелёный цвет режима ожидания
+                    voiceBtn.innerText = "🎧 Автоозвучка активна (Жду ответ...)";
+                } else {
+                    voiceBtn.style.backgroundColor = "#6366f1"; // Фиолетовый базовый
+                    voiceBtn.innerText = "🔊 Включить автоозвучку";
+                }
             };
 
             currentAudio.play();
@@ -250,10 +270,15 @@
             console.error(error);
             alert("Не удалось загрузить живой голос. Попробуйте еще раз.");
             voiceBtn.disabled = false;
-            voiceBtn.innerText = "🔊 Включить живой голос";
+            if (isAutoVoice) {
+                voiceBtn.style.backgroundColor = "#10b981";
+                voiceBtn.innerText = "🎧 Автоозвучка активна (Жду ответ...)";
+            } else {
+                voiceBtn.style.backgroundColor = "#6366f1";
+                voiceBtn.innerText = "🔊 Включить автоозвучку";
+            }
         }
     }
-
 
 function startRecharge(amount) {
 if (currentAudio && !currentAudio.paused) currentAudio.pause();
