@@ -253,8 +253,9 @@
             console.error(error);
             alert("Не удалось загрузить живой голос. Попробуйте еще раз.");
             voiceBtn.disabled = false;
-            voiceBtn.innerText = "🔊 Включить живой голос";
+           voiceBtn.innerText = "🔊 Включить живой голос";
         }
+    }
 
 function startRecharge(amount) {
 if (currentAudio && !currentAudio.paused) currentAudio.pause();
