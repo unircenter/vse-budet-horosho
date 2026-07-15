@@ -193,15 +193,13 @@
             }
         }
     }
-    function speakText() {
+        async function speakText() {
         const rawText = document.getElementById('response').innerText;
-        // Очищаем текст от лишнего мусора, чтобы плеер прочитал всё гладко
         const text = rawText.replace(/\s+/g, ' ').trim();
         if (!text || text.startsWith("Внимательно") || text.startsWith("Обдумываю")) return;
 
         const voiceBtn = document.getElementById('voice-btn');
 
-        // Если аудио уже играет — кнопка работает как "Стоп"
         if (currentAudio && !currentAudio.paused) {
             currentAudio.pause();
             currentAudio.currentTime = 0;
@@ -213,12 +211,29 @@
         voiceBtn.innerText = "⏳ Записываю голос...";
 
         try {
-            // Используем официальный открытый шлюз Google Translate TTS
-            // Браузеры доверяют ему на 100% и никогда не блокируют
-            const googleAudioUrl = "https://google.com" 
-                + encodeURIComponent(text);
+            const cleanKey = "29mUFhdqxATFVI2OJM2HkjlJuGCpvWQi"; 
 
-            currentAudio = new Audio(googleAudioUrl);
+            const response = await fetch('https://api.proxyapi.ru/openai/v1/audio/speech', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer sk-' + cleanKey
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o-mini-tts', // Модель из вашей документации
+                    input: text,
+                    voice: 'coral',           // Мягкий женский голос из списка
+                    response_format: 'mp3',
+                    instructions: 'Говори очень мягко, спокойно, размеренно и с глубокой поддержкой в интонации.' // Обязательный параметр управления речью
+                })
+            });
+
+            if (!response.ok) throw new Error('Ошибка синтеза голоса');
+
+            const blob = await response.blob();
+            const audioUrl = URL.createObjectURL(blob);
+
+            currentAudio = new Audio(audioUrl);
             
             currentAudio.onplay = function() {
                 voiceBtn.disabled = false;
@@ -229,27 +244,16 @@
                 voiceBtn.innerText = "🔊 Включить живой голос";
             };
 
-            currentAudio.onerror = function() {
-                // Если вдруг шлюз занят, плавно переключаемся на встроенный голос, чтобы пользователь не видел ошибок
-                if (window.speechSynthesis) {
-                    const utterance = new SpeechSynthesisUtterance(text);
-                    utterance.lang = 'ru-RU';
-                    utterance.rate = 0.85;
-                    utterance.onend = () => { voiceBtn.innerText = "🔊 Включить живой голос"; };
-                    window.speechSynthesis.speak(utterance);
-                    voiceBtn.disabled = false;
-                    voiceBtn.innerText = "🛑 Остановить голос";
-                }
-            };
-
             currentAudio.play();
 
         } catch (error) {
             console.error(error);
+            alert("Не удалось загрузить живой голос. Попробуйте еще раз.");
             voiceBtn.disabled = false;
             voiceBtn.innerText = "🔊 Включить живой голос";
         }
     }
+
 
 function startRecharge(amount) {
 if (currentAudio && !currentAudio.paused) currentAudio.pause();
